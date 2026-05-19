@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pop-up Geometry & Tessellations</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Bitter:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:    #0d7c7c;
+  --teal-lt: #e6f5f5;
+  --amber:   #d97b00;
+  --amber-lt:#fff4e0;
+  --purple:  #5a3f9e;
+  --purple-lt:#f0ecff;
+  --green:   #2a7a3b;
+  --green-lt:#eaf6ed;
+  --red:     #c0392b;
+  --ink:     #1a1a2e;
+  --mid:     #5a5a7a;
+  --border:  #dde0ee;
+  --bg:      #f4f5fb;
+  --white:   #ffffff;
+  --nav-h:   54px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.6;
+  padding-top: var(--nav-h);
+}
+
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--ink);
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  z-index: 100;
+  padding: 0 8px;
+}
+nav::-webkit-scrollbar { display: none; }
+nav a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+nav a:hover, nav a.active { background: var(--teal); color: white; }
+
+.hero {
+  background: linear-gradient(140deg, #0d7c7c 0%, #5a3f9e 100%);
+  color: white;
+  padding: 28px 20px 24px;
+  text-align: center;
+}
+.hero h1 {
+  font-family: 'Bitter', serif;
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
+  line-height: 1.15;
+}
+.hero .sub { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.7; margin-top: 5px; }
+.hero .tagline { font-family: 'Bitter', serif; font-style: italic; font-size: 0.88rem; opacity: 0.72; margin-top: 5px; }
+.due-pill {
+  display: inline-block;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-top: 12px;
+}
+
+.wrap { max-width: 680px; margin: 0 auto; padding: 0 14px 100px; }
+.section-block { scroll-margin-top: calc(var(--nav-h) + 8px); }
+
+.sec-chip { display: flex; align-items: center; gap: 10px; margin: 24px 0 12px; }
+.sec-chip .num {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 1rem; flex-shrink: 0; color: white;
+}
+.num.teal   { background: var(--teal); }
+.num.purple { background: var(--purple); }
+.num.green  { background: var(--green); }
+.num.red    { background: var(--red); }
+.sec-chip h2 { font-family: 'Bitter', serif; font-size: 1.05rem; color: var(--ink); }
+
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  padding: 14px 16px;
+  margin: 10px 0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.card.tc { border-color: var(--teal); }
+.card.pc { border-color: var(--purple); }
+.card.gc { border-color: var(--green); }
+.card.ac { border-color: var(--amber); }
+
+.callout { border-radius: 10px; padding: 10px 13px; margin: 8px 0; font-size: 0.87rem; }
+.callout.amber  { background: var(--amber-lt);  border-left: 4px solid var(--amber); }
+.callout.teal   { background: var(--teal-lt);   border-left: 4px solid var(--teal); }
+.callout.green  { background: var(--green-lt);  border-left: 4px solid var(--green); }
+
+.shape-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.shape-tile {
+  background: var(--teal-lt); border: 1.5px solid var(--teal);
+  border-radius: 10px; padding: 10px 12px;
+}
+.shape-tile .sname { font-weight: 800; font-size: 0.88rem; color: var(--teal); }
+.shape-tile .sdim  { font-size: 0.78rem; color: var(--mid); margin-top: 2px; }
+
+.link-btn {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--teal); color: white; text-decoration: none;
+  border-radius: 10px; padding: 11px 16px;
+  font-weight: 800; font-size: 0.88rem; margin: 6px 0;
+  transition: opacity 0.15s;
+}
+.link-btn:hover { opacity: 0.85; }
+.link-btn .li { font-size: 1.1rem; flex-shrink: 0; }
+.link-btn.p { background: var(--purple); }
+.link-btn.g { background: var(--green); }
+.link-btn.a { background: var(--amber); }
+
+table {
+  width: 100%; border-collapse: collapse; font-size: 0.85rem;
+  background: white; border-radius: 10px; overflow: hidden;
+  margin: 10px 0; box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+}
+th { background: var(--teal); color: white; padding: 8px 10px; text-align: left; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; }
+td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: #f9f9fe; }
+
+.euler-box {
+  background: var(--amber-lt); border: 2px solid var(--amber);
+  border-radius: 12px; padding: 12px 14px; margin: 10px 0;
+}
+.euler-box .el { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px; color: var(--amber); margin-bottom: 4px; }
+.euler-box .ef { font-family: 'Bitter', serif; font-size: 1.15rem; font-weight: 700; margin: 4px 0; }
+
+.pnote {
+  display: flex; gap: 8px; align-items: flex-start;
+  border-left: 3px solid var(--teal); padding: 8px 12px;
+  font-size: 0.84rem; color: var(--mid); font-style: italic;
+  background: var(--teal-lt); border-radius: 0 8px 8px 0; margin: 10px 0;
+}
+.pnote .pi { flex-shrink: 0; font-size: 1rem; font-style: normal; }
+.pnote strong { font-style: normal; color: var(--ink); }
+
+.bonus-strip {
+  background: linear-gradient(90deg, var(--amber), #f5a623);
+  color: white; border-radius: 12px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px; margin: 10px 0;
+  font-size: 0.9rem; font-weight: 800;
+}
+
+.proj-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.proj-hd .pid { background: var(--purple); color: white; border-radius: 7px; padding: 2px 9px; font-weight: 900; font-size: 0.82rem; }
+.proj-hd .pt  { font-weight: 800; font-size: 0.97rem; color: var(--purple); }
+.proj-hd .pb  { margin-left: auto; background: var(--amber); color: white; border-radius: 7px; padding: 2px 8px; font-size: 0.72rem; font-weight: 800; }
+
+.folder-warn {
+  background: #fdecea; border: 2px solid var(--red); border-radius: 10px;
+  padding: 10px 14px; font-size: 0.87rem; color: #7a1515; font-weight: 700; margin: 10px 0;
+}
+
+.chk-group-title { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px; color: var(--mid); margin: 14px 0 6px; }
+.chk-item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+.chk-item:last-child { border-bottom: none; }
+.chk-item input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--teal); margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+.chk-item label { cursor: pointer; line-height: 1.4; }
+.chk-item input:checked + label { color: var(--mid); text-decoration: line-through; }
+
+.genesis {
+  background: var(--amber-lt); border-left: 4px solid var(--amber);
+  border-radius: 0 12px 12px 0; padding: 14px 16px;
+  font-family: 'Bitter', serif; font-style: italic;
+  font-size: 0.9rem; color: #5a3a00; margin: 14px 0;
+}
+.genesis .gl { font-family: 'Nunito', sans-serif; font-style: normal; font-weight: 900; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--amber); margin-bottom: 6px; }
+
+.print-fab {
+  position: fixed; bottom: 20px; right: 16px;
+  background: var(--ink); color: white; border: none; border-radius: 50px;
+  padding: 12px 20px; font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-size: 0.85rem; cursor: pointer; display: flex; align-items: center;
+  gap: 7px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); z-index: 99;
+  transition: transform 0.15s;
+}
+.print-fab:hover { transform: scale(1.04); }
+
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0 6px 20px; }
+li { margin: 3px 0; }
+h3 { font-size: 0.93rem; font-weight: 800; color: var(--ink); margin: 12px 0 6px; }
+
+@media (max-width: 480px) { .shape-grid { grid-template-columns: 1fr; } }
+
+/* ── PRINT ── */
+@media print {
+  body { padding: 0; font-size: 13px; background: white; }
+  nav, .print-fab, .wrap { display: none !important; }
+  .hero { display: none !important; }
+  #print-section { display: block !important; }
+
+  .rp-card { border: 1.5px solid #ccc; border-radius: 8px; padding: 18px; margin-bottom: 20px; page-break-after: always; }
+  .rp-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #eee; }
+  .rp-badge { background: #1a1a2e; color: white; border-radius: 6px; padding: 2px 10px; font-weight: 900; font-size: 0.9rem; }
+  .rp-italic { font-style: italic; color: #777; font-size: 0.8rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+  .f-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #888; margin-bottom: 2px; }
+  .f-line { border-bottom: 1.5px solid #bbb; height: 22px; }
+  .q { font-weight: 700; font-size: 0.88rem; margin: 12px 0 6px; }
+  .lines { display: flex; flex-direction: column; gap: 8px; }
+  .aline { border-bottom: 1px solid #bbb; height: 20px; }
+
+  .rubric-wrap { padding: 0 4px; }
+  .rubric-wrap h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; font-family: serif; }
+  .rub-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 8px 0 14px; }
+  .rub-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .rub-table th { background: #1a1a2e; color: white; padding: 6px 10px; text-align: left; }
+  .rub-table td { padding: 5px 10px; border-bottom: 1px solid #ddd; }
+  .rub-table td:last-child { text-align: right; font-weight: 700; width: 55px; }
+  .rub-table .rh { background: #eee; font-weight: 800; }
+  .tc-area { border: 1px solid #ccc; border-radius: 6px; padding: 10px; min-height: 55px; margin-top: 8px; }
+  .loose { font-size: 0.72rem; text-align: center; font-style: italic; color: #999; margin-top: 10px; }
+}
+#print-section { display: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#sec1">Section 1</a>
+  <a href="#sec2">Section 2</a>
+  <a href="#sec3">Section 3</a>
+  <a href="#checklist">Checklist</a>
+</nav>
+
+<div class="hero">
+  <h1>Pop-up Geometry<br>&amp; Tessellations</h1>
+  <p class="sub">Portfolio Project — Form 1 Math</p>
+  <p class="tagline">Exploring Shapes, Structure, and Nature in 3D Design</p>
+  <div class="due-pill">📅 Due: May 24, 2026 @ 8:00 AM</div>
+</div>
+
+<div class="wrap">
+
+  <div id="overview" class="section-block">
+    <div class="genesis">
+      <div class="gl">✝ A Note on Creation</div>
+      Genesis 1:26–27 tells us that on the sixth day, God created living beings with purpose and intentional design. This project reflects that same creative instinct — using mathematics to discover the structure and order built into the world around us. As you build, measure, and pattern, you are thinking the way God thought when He designed creation.
+    </div>
+    <div class="card">
+      <h3>How This Works</h3>
+      <p>This is a <strong>group project for four people</strong>. You decide together who does what — but every member must sign off on every section before submission. If it is in the folder, all four of you are standing behind it.</p>
+    </div>
+    <div class="callout green">💡 <strong>Tip:</strong> Use <strong>recycled materials</strong> — cardboard, cereal boxes, old folders, leftover craft paper. Better for the environment and perfectly acceptable.</div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div id="sec1" class="section-block">
+    <div class="sec-chip"><div class="num teal">1</div><h2>Basic 3D Nets — Build, Measure, Explain</h2></div>
+
+    <p>Build <strong>four pull-up 3D nets</strong> from paper. Each net must fit on Letter-sized paper and stand on its own. All working shown on separate sheets placed beside each shape in the folder.</p>
+
+    <h3>The Four Shapes</h3>
+    <div class="shape-grid">
+      <div class="shape-tile"><div class="sname">Cube</div><div class="sdim">5 cm × 5 cm faces</div></div>
+      <div class="shape-tile"><div class="sname">Rectangular Prism</div><div class="sdim">12 cm × 4 cm × 4 cm</div></div>
+      <div class="shape-tile"><div class="sname">Triangular Prism</div><div class="sdim">Base 6 cm equilateral · H 11 cm</div></div>
+      <div class="shape-tile"><div class="sname">Triangular Pyramid</div><div class="sdim">Base 9 cm equilateral · H 8 cm</div></div>
+    </div>
+
+    <h3>Pattern &amp; Instructions</h3>
+    <a class="link-btn" href="https://drive.google.com/file/d/1cFIwBpAPICmBF9aNW2g5BTQnAF83d24o/view?usp=drive_link" target="_blank"><span class="li">📄</span> Net Pattern (Google Drive)</a>
+    <a class="link-btn" href="https://tinyurl.com/3xk494kt" target="_blank"><span class="li">🔗</span> Instructions — tinyurl.com/3xk494kt</a>
+
+    <h3>Faces, Edges &amp; Vertices</h3>
+    <p style="font-size:0.82rem;color:var(--mid);">Copy this table onto your own paper and place it in Section 1 of your portfolio.</p>
+    <table>
+      <thead><tr><th>Shape</th><th>Faces (F)</th><th>Edges (E)</th><th>Vertices (V)</th></tr></thead>
+      <tbody>
+        <tr><td>Cube</td><td></td><td></td><td></td></tr>
+        <tr><td>Rectangular Prism</td><td></td><td></td><td></td></tr>
+        <tr><td>Triangular Prism</td><td></td><td></td><td></td></tr>
+        <tr><td>Triangular Pyramid</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="euler-box">
+      <div class="el">⭐ Optional Challenge — Euler's Formula</div>
+      <div class="ef">F + V − E = ?</div>
+      <p style="font-size:0.85rem;">Try it for every shape. Do you always get the same answer? Write what you notice and include it with your table.</p>
+    </div>
+
+    <h3>Surface Area</h3>
+    <p>For each shape, calculate the total surface area. Show formula, substitution, and final answer. Label every answer in <strong>cm²</strong>. Place each working sheet beside its shape in the portfolio.</p>
+    <div class="pnote"><span class="pi">📋</span><span><strong>In your portfolio:</strong> Four surface area calculations with full working, each beside its shape.</span></div>
+
+    <h3>Amazing Body Shapes</h3>
+    <div class="card tc" style="margin-bottom:8px;">
+      <h3 style="color:var(--teal);margin-top:0;">🦴 Cube-like shapes in your skull</h3>
+      <p style="font-size:0.88rem;">The cranium is assembled from flat-sided bones that fit together at fixed joints called <em>sutures</em>.</p>
+      <ul style="font-size:0.87rem;margin-top:6px;">
+        <li>Research the <strong>Parietal bones</strong> — where they sit and what they look like.</li>
+        <li>Notice how flat faces fit against neighbouring bones with no gaps.</li>
+        <li>Why might flat-faced shapes be better for protection than rounded ones?</li>
+      </ul>
+      <div class="pnote" style="margin-top:10px;"><span class="pi">📋</span><span><strong>Portfolio response:</strong> Why must skull bones fit with no gaps? What would happen if they didn't? Use at least one geometry word.</span></div>
+    </div>
+
+    <div class="card tc">
+      <h3 style="color:var(--teal);margin-top:0;">🦷 Pyramid &amp; prism shapes in your mouth</h3>
+      <ul style="font-size:0.87rem;">
+        <li><strong>Canine teeth</strong> — pointed like a triangular pyramid. Built to pierce and tear.</li>
+        <li><strong>Molars</strong> — broad like a rectangular prism. Built to grind.</li>
+        <li>Which concentrates force at a point? Which spreads force over a surface?</li>
+        <li>Which is better for biting a mango vs chewing rice?</li>
+      </ul>
+      <div class="pnote" style="margin-top:10px;"><span class="pi">📋</span><span><strong>Portfolio response:</strong> How does each tooth shape help you eat different foods? Use: <em>pointy, flat, force, surface area</em>.</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div id="sec2" class="section-block">
+    <div class="sec-chip"><div class="num purple">2</div><h2>Advanced Pop-up Projects</h2></div>
+    <p>Complete <strong>TWO</strong> of the three projects below.</p>
+
+    <div class="bonus-strip"><span style="font-size:1.4rem;">⭐</span><span>Dodecahedron counts as a choice AND earns +5 bonus — possible total: 105/100</span></div>
+
+    <div class="card pc">
+      <div class="proj-hd"><span class="pid">2A</span><span class="pt">Pop-up Greeting Card</span></div>
+      <ul style="font-size:0.88rem;">
+        <li>At least 1 piece of Letter-sized cardstock for the base.</li>
+        <li>Must pop up at least <strong>3 cm</strong> when opened.</li>
+        <li>Include at least <strong>2 different geometric shapes</strong> in the design.</li>
+      </ul>
+      <a class="link-btn p" href="https://www.youtube.com/results?search_query=pop+up+greeting+card+tutorial" target="_blank" style="margin-top:10px;"><span class="li">▶</span> Find a tutorial online</a>
+      <div class="pnote"><span class="pi">📋</span><span><strong>Portfolio:</strong> Finished card + sheet naming every geometric shape, its F/E/V, and one real-life structure using the same folding principle.</span></div>
+    </div>
+
+    <div class="card pc">
+      <div class="proj-hd"><span class="pid">2B</span><span class="pt">Pop-up Staircase</span></div>
+      <div class="callout teal" style="font-size:0.83rem;margin-bottom:8px;"><strong>Materials:</strong> Letter-sized cardstock · scissors · ruler · clear tape</div>
+      <ul style="font-size:0.88rem;">
+        <li>At least <strong>4 steps</strong>.</li>
+        <li>Stands properly when opened. Folds flat when closed.</li>
+      </ul>
+      <a class="link-btn p" href="https://www.youtube.com/results?search_query=pop+up+staircase+cardstock+tutorial" target="_blank" style="margin-top:10px;"><span class="li">▶</span> Find a tutorial online</a>
+      <div class="pnote"><span class="pi">📋</span><span><strong>Portfolio:</strong> Finished staircase + sheet identifying each step's shape (F/E/V) + why architects need to understand 3D shapes.</span></div>
+    </div>
+
+    <div class="card ac">
+      <div class="proj-hd"><span class="pid">2C</span><span class="pt">Rubber Band Dodecahedron</span><span class="pb">+5 BONUS</span></div>
+      <div class="callout amber" style="font-size:0.83rem;margin-bottom:8px;"><em>This is the hardest build. Take it on if your group is ready.</em></div>
+      <div class="callout teal" style="font-size:0.83rem;margin-bottom:8px;"><strong>Materials:</strong> 30 rubber bands (same size) · 12 cardboard squares 6 cm × 6 cm · scissors</div>
+      <ul style="font-size:0.88rem;">
+        <li>Connect squares using rubber bands, piece by piece.</li>
+        <li>Must hold its shape and show <strong>12 equal faces</strong>.</li>
+      </ul>
+      <a class="link-btn a" href="https://www.youtube.com/results?search_query=rubber+band+dodecahedron+tutorial" target="_blank" style="margin-top:10px;"><span class="li">▶</span> Find a tutorial online</a>
+      <div class="pnote"><span class="pi">📋</span><span><strong>Portfolio:</strong> Verify 12 faces, 30 edges, 20 vertices. Does F + V − E = 2? Show working. Name one place in nature or design where a dodecahedron appears.</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div id="sec3" class="section-block">
+    <div class="sec-chip"><div class="num green">3</div><h2>Tessellations — Nature's Own Geometry</h2></div>
+    <p>A <strong>tessellation</strong> is a pattern of shapes covering a flat surface with <strong>no gaps and no overlaps</strong>. You will create two.</p>
+    <div class="callout green" style="font-size:0.83rem;"><strong>Materials for both:</strong> 2 pieces of Letter-sized paper (different colours) · tracing paper · pencil · ruler · scissors · glue stick</div>
+
+    <div class="card gc" style="margin-top:10px;">
+      <h3 style="color:var(--green);margin-top:0;">Tessellation 1 — Geometric Mix</h3>
+      <p style="font-size:0.88rem;">Choose <strong>one</strong>:</p>
+      <ul style="font-size:0.88rem;">
+        <li>Triangles (4 cm sides) + hexagons, <strong>OR</strong></li>
+        <li>Triangles (4 cm sides) + squares</li>
+      </ul>
+      <p style="font-size:0.88rem;margin-top:6px;">Fill the <strong>whole page</strong>, no gaps, at least <strong>4 repeats</strong>, neatly coloured.</p>
+      <div class="pnote"><span class="pi">📋</span><span><strong>Portfolio:</strong> Finished tessellation + your group's definition of a tessellation in your own words + why there must be no gaps.</span></div>
+    </div>
+
+    <div class="card gc">
+      <h3 style="color:var(--green);margin-top:0;">Tessellation 2 — Your Own Nature Pattern</h3>
+      <p style="font-size:0.88rem;">Find a pattern in nature — any plant, animal, or surface — that tessellates. <strong>Do not copy another group's pattern.</strong></p>
+      <ul style="font-size:0.88rem;margin-top:6px;">
+        <li>Fill the whole page, no gaps.</li>
+        <li>Repeat at least <strong>6 times</strong>.</li>
+        <li>Colour to match your nature inspiration.</li>
+      </ul>
+      <div class="pnote"><span class="pi">📋</span><span><strong>Portfolio:</strong> Name your pattern, describe it in real life, explain why it appears in nature, and give two tessellation examples outside of nature with the shape used in each.</span></div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div id="checklist" class="section-block">
+    <div class="sec-chip"><div class="num red">✓</div><h2>Pre-Submission Checklist</h2></div>
+    <p style="font-size:0.85rem;color:var(--mid);">Every box must be ticked before the portfolio is submitted.</p>
+    <div class="folder-warn">📁 All work must be in a bound folder — duo-tang, ring binder, or similar. <strong>Loose pages will not be accepted. The portfolio will be returned unmarked.</strong></div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="chk-group-title">Folder &amp; Organisation</div>
+      <div class="chk-item"><input type="checkbox" id="c1"><label for="c1">All work is in a bound folder. No loose pages.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c2"><label for="c2">Group name, class, and due date on the cover.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c3"><label for="c3">Sections in order: 1 → 2A → 2B → 2C (if done) → 3 → Individual Reflections.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c4"><label for="c4">Blank rubric attached at the back — loose, not stapled.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c5"><label for="c5">All four members signed the sign-off on the cover page.</label></div>
+
+      <div class="chk-group-title">Section 1 — 3D Nets</div>
+      <div class="chk-item"><input type="checkbox" id="c6"><label for="c6">All four nets constructed, standing, and in the portfolio.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c7"><label for="c7">F / E / V table filled in for all four shapes (on your own paper).</label></div>
+      <div class="chk-item"><input type="checkbox" id="c8"><label for="c8">Surface area working on separate sheets beside each shape.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c9"><label for="c9">All surface area answers labelled in cm².</label></div>
+      <div class="chk-item"><input type="checkbox" id="c10"><label for="c10">Both body shape questions answered in writing and included.</label></div>
+
+      <div class="chk-group-title">Section 2 — Pop-up Projects</div>
+      <div class="chk-item"><input type="checkbox" id="c11"><label for="c11">Greeting Card: complete, pops up 3+ cm, includes 2+ geometric shapes.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c12"><label for="c12">Staircase: complete, 4+ steps, stands when open, folds flat when closed.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c13"><label for="c13">Written responses for both projects included.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c14"><label for="c14">Dodecahedron (if built): holds shape, 12 faces, Euler question answered.</label></div>
+
+      <div class="chk-group-title">Section 3 — Tessellations</div>
+      <div class="chk-item"><input type="checkbox" id="c15"><label for="c15">Tessellation 1: fills the page, no gaps, 4+ repeats, neatly coloured.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c16"><label for="c16">Tessellation 1: written definition included.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c17"><label for="c17">Tessellation 2: fills the page, no gaps, 6+ repeats, coloured to match nature.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c18"><label for="c18">Tessellation 2: written responses included.</label></div>
+
+      <div class="chk-group-title">Individual Reflections</div>
+      <div class="chk-item"><input type="checkbox" id="c19"><label for="c19">Four separate reflection pages in the portfolio — one per member, answered individually.</label></div>
+      <div class="chk-item"><input type="checkbox" id="c20"><label for="c20">Every question on every page is answered.</label></div>
+    </div>
+
+    <div class="callout amber" style="margin-top:12px;">🖨️ <strong>Need a spare reflection page or the rubric?</strong> Tap the print button below — it prints one blank reflection page and the assessment rubric only.</div>
+  </div>
+
+</div><!-- end .wrap -->
+
+<button class="print-fab" onclick="window.print()">🖨️ Print Reflection &amp; Rubric</button>
+
+<!-- PRINT-ONLY SECTION -->
+<div id="print-section">
+
+  <!-- One blank reflection page -->
+  <div class="rp-card">
+    <div class="rp-top">
+      <span class="rp-badge">Individual Reflection</span>
+      <span class="rp-italic">Answer every question yourself. Do not share answers with your group.</span>
+    </div>
+    <div class="field-row">
+      <div><div class="f-label">Name</div><div class="f-line"></div></div>
+      <div><div class="f-label">Class</div><div class="f-line"></div></div>
+    </div>
+    <div class="q">✏ Which section did you personally contribute the most to? Describe exactly what you did.</div>
+    <div class="lines"><div class="aline"></div><div class="aline"></div><div class="aline"></div><div class="aline"></div></div>
+    <div class="q">✏ Choose ONE shape. Explain in your own words what makes it a 3D shape and not a 2D shape. Use the words <em>face</em>, <em>edge</em>, and <em>vertex</em>.</div>
+    <div class="lines"><div class="aline"></div><div class="aline"></div><div class="aline"></div><div class="aline"></div><div class="aline"></div></div>
+    <div class="q">✏ What is one thing you discovered during this project that surprised you? It can be about maths, nature, or working as a group.</div>
+    <div class="lines"><div class="aline"></div><div class="aline"></div><div class="aline"></div><div class="aline"></div></div>
+    <div class="q">✏ If you were to build this project again, what would you do differently and why?</div>
+    <div class="lines"><div class="aline"></div><div class="aline"></div><div class="aline"></div><div class="aline"></div></div>
+  </div>
+
+  <!-- Assessment Rubric -->
+  <div class="rubric-wrap">
+    <h2>Assessment Rubric — Pop-up Geometry &amp; Tessellations</h2>
+    <div class="rub-fields">
+      <div><div class="f-label">Group Name</div><div class="f-line"></div></div>
+      <div><div class="f-label">Class</div><div class="f-line"></div></div>
+      <div><div class="f-label">Total</div><div class="f-line"></div></div>
+    </div>
+    <table class="rub-table">
+      <tbody>
+        <tr><td class="rh" colspan="2"><strong>Section 1 — 3D Nets &amp; Calculations &nbsp;/20</strong></td></tr>
+        <tr><td>All four nets constructed and placed in the portfolio</td><td>/4</td></tr>
+        <tr><td>Correct measurements used on each shape</td><td>/4</td></tr>
+        <tr><td>Surface area calculations shown with formula and full working</td><td>/4</td></tr>
+        <tr><td>Final answers labelled with units (cm²)</td><td>/4</td></tr>
+        <tr><td>Body shape questions answered with geometric reasoning</td><td>/4</td></tr>
+        <tr><td class="rh" colspan="2"><strong>Section 2A — Pop-up Greeting Card &nbsp;/15</strong></td></tr>
+        <tr><td>Meets requirements: pops up 3+ cm, includes 2+ geometric shapes</td><td>/5</td></tr>
+        <tr><td>Structure is stable and functions correctly</td><td>/5</td></tr>
+        <tr><td>Written response uses specific geometric vocabulary</td><td>/5</td></tr>
+        <tr><td class="rh" colspan="2"><strong>Section 2B — Pop-up Staircase &nbsp;/15</strong></td></tr>
+        <tr><td>At least 4 steps, stands when open, folds flat when closed</td><td>/5</td></tr>
+        <tr><td>Structure is stable and functions correctly</td><td>/5</td></tr>
+        <tr><td>Written response uses specific geometric vocabulary</td><td>/5</td></tr>
+        <tr><td class="rh" colspan="2"><strong>Section 2C — Dodecahedron Bonus &nbsp;/5</strong></td></tr>
+        <tr><td>Completed, holds shape, 12 equal faces, Euler question answered</td><td>+/5</td></tr>
+        <tr><td class="rh" colspan="2"><strong>Section 3 — Tessellations &nbsp;/20</strong></td></tr>
+        <tr><td>Tessellation 1: no gaps, 4+ repeats, neatly coloured</td><td>/5</td></tr>
+        <tr><td>Tessellation 1: written definition is mathematically sound</td><td>/5</td></tr>
+        <tr><td>Tessellation 2: no gaps, 6+ repeats, coloured to match nature</td><td>/5</td></tr>
+        <tr><td>Nature pattern explained with purpose and geometric reasoning</td><td>/5</td></tr>
+        <tr><td class="rh" colspan="2"><strong>Individual Reflections &nbsp;/15</strong></td></tr>
+        <tr><td>Four separate reflection pages present (1 mark each)</td><td>/4</td></tr>
+        <tr><td>Shape explained correctly using face / edge / vertex</td><td>/5</td></tr>
+        <tr><td>Reflection is specific, honest, and thoughtful</td><td>/6</td></tr>
+        <tr><td class="rh" colspan="2"><strong>Portfolio Presentation &nbsp;/15</strong></td></tr>
+        <tr><td>Work is in a bound folder — no loose pages</td><td>/5</td></tr>
+        <tr><td>Checklist completed and included</td><td>/5</td></tr>
+        <tr><td>Sections labelled, ordered, clean and undamaged</td><td>/5</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:10px;font-size:0.82rem;font-weight:700;">Teacher Comments</div>
+    <div class="tc-area"></div>
+    <div class="loose">This rubric stays loose at the back of the folder — do not staple or glue.</div>
+  </div>
+
+</div>
+
+<script>
+const sections = document.querySelectorAll('.section-block');
+const navLinks = document.querySelectorAll('nav a');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`nav a[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
